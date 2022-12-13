@@ -1,9 +1,10 @@
 <script setup>
-
+import Bill from '../components/Bill.vue'
 </script>
  
 <template>
-<div>kdpfkj[]</div>
+
+    <Bill />
 </template>
  
 <style>
