@@ -28,7 +28,6 @@ if (localStorage.getItem("firstname") == null) {
     isLoggedIn.value = true
 }
 
-
 async function filter(index, startPrice, endPrice) {
     let qry = null
     if (index == 'paid') {

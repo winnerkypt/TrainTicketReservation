@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { query, collection, where, orderBy, getDocs, getCountFromServer } from 'firebase/firestore'
+import { query, getDoc, collection, where, orderBy, getDocs, getCountFromServer, limit } from 'firebase/firestore'
 import db from '../firebase/init.js'
 import Ticket from '../components/Ticket.vue'
 import FilterTicket from '../components/FilterTicket.vue'
@@ -20,7 +20,7 @@ async function getTickets() {
   })
 }
 async function filterTicket(index, value) {
- 
+
   let qry = null
   if (index == 'beginning') {
     const trainRef = collection(db, 'trains')
@@ -28,11 +28,32 @@ async function filterTicket(index, value) {
   } else if (index == 'price') {
     const trainRef = collection(db, 'trains')
     qry = query(trainRef, orderBy("price", value))
-  } else if(index == 'countTicket'){
+  } else if (index == 'countTicket') {
     const trainRef = collection(db, 'trains')
     qry = query(trainRef)
     countTickets.value = (await getCountFromServer(qry)).data().count
-    console.log(countTickets.value)
+  } else if (index == 'maxPrice') {
+    const trainRef = collection(db, 'trains')
+    let qry1 = query(trainRef, orderBy("price", 'desc'), limit(1))
+    let price = ref()
+    const querySnap = await getDocs(qry1);
+    querySnap.forEach((doc) => {
+      price.value = doc.data().price
+    });
+    console.log(price.value)
+    qry = query(trainRef, where("price", "==", price.value))
+  } else if (index == 'minPrice') {
+    const trainRef = collection(db, 'trains')
+    let qry1 = query(trainRef, orderBy("price", 'asc'), limit(1))
+
+    let price = ref()
+    const querySnap = await getDocs(qry1);
+    querySnap.forEach((doc) => {
+      price.value = doc.data().price
+    });
+    console.log(price.value)
+    qry = query(trainRef, where("price", "==", price.value))
+
   }
   tickets.value = []
   const querySnap = await getDocs(qry);
@@ -40,10 +61,10 @@ async function filterTicket(index, value) {
     let data = doc.data();
     data.id = doc.id;
     tickets.value.push(data);
-    // console.log(tickets.value)
+    console.log(tickets.value)
   });
 
-  if(index == 'countTicket'){
+  if (index == 'countTicket') {
     const trainRef = collection(db, 'trains')
     qry = query(trainRef)
     countTickets.value = (await getCountFromServer(qry)).data().count
@@ -58,7 +79,7 @@ onMounted(() => {
 </script>
  
 <template>
-  <FilterTicket @filter="filterTicket" :countTickets="countTickets"/>
+  <FilterTicket @filter="filterTicket" :countTickets="countTickets" />
   <div class="grid grid-cols-2 gap-2 ">
 
     <Ticket v-for="ticket in tickets" :ticket="ticket" :key="ticket.id" />
